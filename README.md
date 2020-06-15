@@ -1,9 +1,10 @@
 # esp8266-websocketclient
+
 ESP8266 WebsocketClient
 
-A simple Websocket Client for the ESP8266. Supporting ws:// & wss://.
+Un simple cliente basado en eventos de websocket para el ESP8266, con soporte de los protocolos ws y wss.
 
-Example:
+Ejemplo:
 
 ```
 #include <Arduino.h>
@@ -12,28 +13,36 @@ Example:
 
 WebSocketClient ws(true);
 
-void setup() {
+void wListener(char *payload, size_t length)
+{
+	for (int i = 0; i < length; i++)
+	{
+		Serial.print(payload[i]);
+	}
+	Serial.println();
+
+	ws.send("Response");
+}
+
+void setup()
+{
 	Serial.begin(115200);
 	WiFi.begin("MyWifi", "secret");
 
 	Serial.print("Connecting");
-	while (WiFi.status() != WL_CONNECTED) {
+	while (WiFi.status() != WL_CONNECTED)
+	{
 		delay(500);
 		Serial.print(".");
 	}
+	ws.begin("echo.websocket.org", "/", 443);
+	ws.setTimeOut(15000);
+	ws.setEvent(wListener);
 }
 
-void loop() {
-	if (!ws.isConnected()) {
-		ws.connect("echo.websocket.org", "/", 443);
-	} else {
-		ws.send("hello");
-
-		String msg;
-		if (ws.getMessage(msg)) {
-			Serial.println(msg);
-		}
-	}
-	delay(500);
+void loop()
+{
+	ws.loop();
 }
+
 ```
